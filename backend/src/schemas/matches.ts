@@ -11,7 +11,7 @@ export const MATCH_STATUS = {
 } as const;
 
 export const matchIdParamSchema = z.object({
-  id: z.coerce.number().int().positive(),
+  matchId: z.coerce.number().int().positive(),
 });
 
 export const createMatchSchema = z

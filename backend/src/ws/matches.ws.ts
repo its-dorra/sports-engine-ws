@@ -1,6 +1,6 @@
 import { Match } from "../db/schema";
-import { broadcastJson } from "./server";
+import { broadcastToAll } from "./broadcast";
 
 export function broadCastMatchCreated(match: Match) {
-  broadcastJson({ type: "match_created", data: match });
+  broadcastToAll({ type: "match_created", data: match });
 }
