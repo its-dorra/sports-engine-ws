@@ -53,3 +53,5 @@ export const commentary = pgTable("commentary", {
     .notNull()
     .defaultNow(),
 });
+
+export type Match = typeof matches.$inferSelect;

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { createMatchSchema, listMatchesQuerySchema } from "../schemas/matches";
 import { matchesService } from "../services/matches";
+import { broadCastMatchCreated } from "../ws/matches.ws";
 
 const app = new Hono();
 
@@ -20,6 +21,7 @@ app.post("/", zValidator("json", createMatchSchema), async (c) => {
 
   try {
     const data = await matchesService.create(matchData);
+    broadCastMatchCreated(data);
     return c.json({ data }, 201);
   } catch {
     return c.json({ error: "Failed to create match" }, 500);
