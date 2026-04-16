@@ -17,8 +17,6 @@ export function subscribeClientToMatch(
   socket: WSContext<ServerWebSocket>,
   matchId: number,
 ) {
-  socket.raw?.subscribe(matchId.toString());
-
   if (!matchClients.has(matchId)) {
     matchClients.set(matchId, new Set());
   }
