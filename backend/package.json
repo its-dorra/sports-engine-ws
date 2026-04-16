@@ -10,10 +10,12 @@
   "dependencies": {
     "@arcjet/bun": "^1.1.0",
     "@arcjet/inspect": "^1.1.0",
+    "@hono/zod-validator": "^0.7.6",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.11.9",
     "pg": "^8.20.0",
-    "ws": "^8.19.0"
+    "ws": "^8.19.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bun": "latest",
