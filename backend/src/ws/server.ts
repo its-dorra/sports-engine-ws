@@ -58,11 +58,11 @@ export function attachWebSocketHandler(app: Hono) {
       onError: (evt, ws) => {
         console.error("WebSocket error:", evt);
         clients.delete(ws);
-        ws.close();
+        if (ws.readyState === WebSocket.OPEN)
+          ws.close(1011, "Internal server error");
       },
-      onClose: (evt, ws) => {
+      onClose: (_, ws) => {
         clients.delete(ws);
-        ws.close();
       },
     })),
   );

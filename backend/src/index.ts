@@ -6,9 +6,9 @@ import { arcjetMiddleware } from "./arcjet";
 
 const app = new Hono();
 
-app.get("/", (c) => c.text("Sportz api!"));
-
 app.use(arcjetMiddleware);
+
+app.get("/", (c) => c.text("Sportz api!"));
 
 app.route("/matches", matchesRoute);
 
