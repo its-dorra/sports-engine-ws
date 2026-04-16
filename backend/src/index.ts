@@ -16,5 +16,7 @@ Bun.serve({
   websocket: {
     ...websocket,
     maxPayloadLength: 1024 * 1024,
+    sendPings: true,
+    perMessageDeflate: true,
   },
 });

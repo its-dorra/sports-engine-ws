@@ -3,7 +3,7 @@ import { upgradeWebSocket } from "hono/bun";
 import { WSContext } from "hono/ws";
 import { Match } from "../db/schema";
 
-const clients = new Set<WSContext>();
+const clients = new Map<WSContext, { isAlive: boolean }>();
 
 type WebSocketPayload =
   | { type: "welcome" }
@@ -12,12 +12,17 @@ type WebSocketPayload =
 function sendJson(socket: WSContext, payload: WebSocketPayload) {
   if (socket.readyState !== WebSocket.OPEN) return;
 
-  return socket.send(JSON.stringify(payload));
+  try {
+    socket.send(JSON.stringify(payload));
+  } catch (error) {
+    console.error("Failed to send message:", error);
+    clients.delete(socket);
+  }
 }
 
 export function broadcastJson(data: WebSocketPayload) {
-  clients.forEach((client) => {
-    sendJson(client, data);
+  Array.from(clients.keys()).forEach((socket) => {
+    if (socket.readyState === WebSocket.OPEN) sendJson(socket, data);
   });
 }
 
@@ -26,14 +31,17 @@ export function attachWebSocketHandler(app: Hono) {
     "/ws",
     upgradeWebSocket((c) => ({
       onOpen: (evt, ws) => {
-        clients.add(ws);
+        clients.set(ws, { isAlive: true });
         sendJson(ws, { type: "welcome" });
       },
       onMessage: (evt, ws) => {},
       onError: (evt, ws) => {
         console.error("WebSocket error:", evt);
+        clients.delete(ws);
       },
-      onClose: (evt, ws) => {},
+      onClose: (evt, ws) => {
+        clients.delete(ws);
+      },
     })),
   );
 }
