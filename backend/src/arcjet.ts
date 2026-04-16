@@ -1,7 +1,20 @@
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/bun";
 import { createMiddleware } from "hono/factory";
 const arcjetKey = Bun.env.ARCJET_KEY;
-const arcjetMode = Bun.env.ARCJET_MODE === "DRY_RUN" ? "DRY_RUN" : "LIVE";
+
+// Validate ARCJET_MODE with fail-fast approach
+const arcjetModeEnv = Bun.env.ARCJET_MODE;
+const arcjetMode = (() => {
+  if (arcjetModeEnv === undefined) {
+    return "DRY_RUN"; // Safe default
+  }
+  if (arcjetModeEnv !== "LIVE" && arcjetModeEnv !== "DRY_RUN") {
+    throw new Error(
+      `Invalid ARCJET_MODE: "${arcjetModeEnv}". Must be "LIVE" or "DRY_RUN".`
+    );
+  }
+  return arcjetModeEnv;
+})();
 
 if (!arcjetKey)
   throw new Error("ARCJET_KEY is not defined in environment variables");
