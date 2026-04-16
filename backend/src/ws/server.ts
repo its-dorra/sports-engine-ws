@@ -1,31 +1,12 @@
 import { Hono } from "hono";
 import { upgradeWebSocket } from "hono/bun";
-import { WSContext } from "hono/ws";
-import { Match } from "../db/schema";
 import { webSocketArcjet } from "../arcjet";
+import { broadcastToAll, broadcastToMatch } from "./broadcast";
+import { handleIncomingMessage } from "./messages";
+import { sendJson } from "./send";
+import { addClient, removeClient } from "./state";
 
-const clients = new Map<WSContext, { isAlive: boolean }>();
-
-type WebSocketPayload =
-  | { type: "welcome" }
-  | { type: "match_created"; data: Match };
-
-function sendJson(socket: WSContext, payload: WebSocketPayload) {
-  if (socket.readyState !== WebSocket.OPEN) return;
-
-  try {
-    socket.send(JSON.stringify(payload));
-  } catch (error) {
-    console.error("Failed to send message:", error);
-    clients.delete(socket);
-  }
-}
-
-export function broadcastJson(data: WebSocketPayload) {
-  Array.from(clients.keys()).forEach((socket) => {
-    if (socket.readyState === WebSocket.OPEN) sendJson(socket, data);
-  });
-}
+export { broadcastToAll, broadcastToMatch };
 
 export function attachWebSocketHandler(app: Hono) {
   app.get(
@@ -51,18 +32,20 @@ export function attachWebSocketHandler(app: Hono) {
           return;
         }
 
-        clients.set(ws, { isAlive: true });
+        addClient(ws);
         sendJson(ws, { type: "welcome" });
       },
-      onMessage: (evt, ws) => {},
+      onMessage: (evt, ws) => {
+        handleIncomingMessage(ws, evt.data);
+      },
       onError: (evt, ws) => {
         console.error("WebSocket error:", evt);
-        clients.delete(ws);
+        removeClient(ws);
         if (ws.readyState === WebSocket.OPEN)
           ws.close(1011, "Internal server error");
       },
       onClose: (_, ws) => {
-        clients.delete(ws);
+        removeClient(ws);
       },
     })),
   );

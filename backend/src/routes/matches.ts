@@ -22,9 +22,9 @@ app.post("/", zValidator("json", createMatchSchema), async (c) => {
   try {
     const data = await matchesService.create(matchData);
     broadCastMatchCreated(data);
-    return c.json({ data }, 201);
+    return c.json({ data, success: true }, 201);
   } catch {
-    return c.json({ error: "Failed to create match" }, 500);
+    return c.json({ error: "Failed to create match", success: false }, 500);
   }
 });
 
